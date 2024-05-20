@@ -9,6 +9,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'SIO App location', home: BiensPages());
+    return const MaterialApp(title: 'SIO App location', home: BiensPage());
   }
 }
