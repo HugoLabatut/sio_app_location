@@ -1,136 +1,160 @@
 import 'package:flutter/material.dart';
+import 'package:mysql_client/mysql_client.dart';
 import 'reserver.pages.dart';
 
 const radius = 13.0;
 const Color cardColor = Color.fromARGB(255, 243, 236, 255);
 
-class ConsulterPages extends StatefulWidget {
-  const ConsulterPages({super.key});
+class ConsulterPage extends StatefulWidget {
+  const ConsulterPage({Key? key, required this.title}) : super(key: key);
+  final String title;
 
   @override
-  State<ConsulterPages> createState() => _ConsulterPagesState();
+  State<ConsulterPage> createState() => _ConsulterPageState();
 }
 
-class _ConsulterPagesState extends State<ConsulterPages> {
-  final List<Image> lesImages = [
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0),
-    const Image(
-        image: NetworkImage(
-            "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-        fit: BoxFit.cover,
-        height: 30.0,
-        width: 30.0)
-  ];
+class _ConsulterPageState extends State<ConsulterPage> {
+  late String idBien;
+
+  List<Map<String, String>> affichageListeBien = [];
+  List<Map<String, String>> affichagePhotosBien = [];
+
+  Future<void> _getBiensByID() async {
+    print("Connexion au serveur...");
+    final conn = await MySQLConnection.createConnection(
+        host: "127.0.0.1",
+        port: 3306,
+        userName: "root",
+        password: "1234",
+        databaseName: "projet-locations");
+    await conn.connect();
+    print("Connecté !");
+    var result =
+        await conn.execute("SELECT * FROM bien WHERE id_bien = $idBien");
+    List<Map<String, String>> liste = [];
+    for (final row in result.rows) {
+      final data = {
+        'selectedIdBien': row.colAt(0)!,
+        'selectedNomBien': row.colAt(1)!,
+        'selectedAdresseBien': row.colAt(2)!,
+        'selectedCPBien': row.colAt(3)!,
+        'selectedDescBien': row.colAt(7)!
+      };
+      liste.add(data);
+    }
+    print("Ici !");
+
+    setState(() {
+      affichageListeBien = liste;
+    });
+
+    await conn.close();
+  }
+
+  Future<void> _getPhotosByBien() async {
+    print("Connexion au serveur...");
+    final conn = await MySQLConnection.createConnection(
+        host: "127.0.0.1",
+        port: 3306,
+        userName: "root",
+        password: "1234",
+        databaseName: "projet-locations");
+    await conn.connect();
+    print("Connecté !");
+    var result =
+        await conn.execute("SELECT * FROM photo WHERE id_bien = $idBien");
+    List<Map<String, String>> liste = [];
+    for (final row in result.rows) {
+      final dataPhotos = {
+        'selectedLienPhoto': row.colAt(2)!,
+      };
+      liste.add(dataPhotos);
+    }
+    print("Ici !");
+
+    setState(() {
+      affichagePhotosBien = liste;
+    });
+
+    await conn.close();
+  }
+
   @override
+  void initState() {
+    super.initState();
+    idBien = widget.title;
+    _getBiensByID();
+    _getPhotosByBien();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 248, 245, 253),
-        title: const Text('Consulter un bien',
-            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
+        title: const Text(
+          "Consulter un bien",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
-      body: Column(
-        children: <Widget>[
-          Card(
-              color: cardColor,
-              child: Row(children: <Widget>[
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(radius),
-                    child: const Image(
-                      image: NetworkImage(
-                          "https://cdn.mos.cms.futurecdn.net/LhGUFiZ3y8QRxbkHztmVge-1200-80.jpg"),
-                      height: 100.0,
-                    )),
-                const Column(
-                  children: <Widget>[
-                    Text("Maison n°1",
-                        style: TextStyle(
-                            fontSize: 26.0, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.left),
-                    Text("2 Rue de la bonne foi", textAlign: TextAlign.left),
-                    Text("19100 Brive-La-Gaillarde", textAlign: TextAlign.left)
-                  ],
-                )
-              ])),
-          const Padding(padding: EdgeInsets.all(1.0)),
-          const Card(
-            child: Text("Ceci est un descriptif du bien.", textAlign: TextAlign.left)
-          ),
-          const Padding(padding: EdgeInsets.all(1.0)),
-          Expanded(
-              child:
-                  GridView.count(crossAxisCount: 3, children: [...lesImages])),
-          Row(children: [
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(Icons.arrow_back)),
-            const Padding(padding: EdgeInsets.all(5.0)),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+      body: SingleChildScrollView(
+          child: Column(children: [
+        ...affichageListeBien.map<Widget>((data) {
+          return Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(data['selectedNomBien'] ?? "",
+                    style: const TextStyle(
+                        fontSize: 26, fontWeight: FontWeight.bold)),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(data['selectedDescBien'] ?? "",
+                    style: const TextStyle(fontSize: 20)),
+              ),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Adresse du bien : "),
+              ),
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(data['selectedAdresseBien'] ?? "",
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Code postal : "),
+              ),
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(data['selectedCPBien'] ?? "",
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+              ElevatedButton(onPressed: () {
+                Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const ReserverPages()));
-                },
-                child: const Text("Réserver"))
-          ])
-        ],
-      ),
+                          builder: ((context) => ReserverPage(
+                              title: data['selectedIdBien'] ?? ""))));
+              }, child: const Text("Réserver"))
+            ],
+          );
+        }).toList(),
+        ...affichagePhotosBien.map<Widget>((dataPhotos) {
+          return Column(
+            children: [
+              Card(
+                semanticContainer: true,
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                elevation: 5,
+                margin: const EdgeInsets.all(10),
+                child: Image.network(dataPhotos['selectedLienPhoto'] ?? ""),
+              )
+            ],
+          );
+        }).toList(),
+      ])),
     );
   }
 }

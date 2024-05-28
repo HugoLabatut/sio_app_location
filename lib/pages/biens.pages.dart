@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mysql_client/mysql_client.dart';
+import 'consulter.pages.dart';
 
 const radius = 20.0;
 const Color cardColor = Color.fromARGB(255, 243, 236, 255);
@@ -24,13 +25,13 @@ class _BiensPageState extends State<BiensPage> {
         databaseName: "projet-locations");
     await conn.connect();
     print("Connecté !");
-    var result = await conn.execute(
-        "SELECT * FROM photo INNER JOIN bien ON photo.id_bien = bien.id_bien");
+    var result = await conn.execute("SELECT * FROM bien");
     List<Map<String, String>> liste = [];
     for (final row in result.rows) {
       final data = {
-        'selectedIdBien': row.colAt(4)!,
-        'selectedLienPhoto': row.colAt(3)!,
+        'selectedIdBien': row.colAt(0)!,
+        'selectedNomBien': row.colAt(1)!,
+        'selectedAdresseBien' : row.colAt(2)!,
       };
       liste.add(data);
     }
@@ -63,8 +64,20 @@ class _BiensPageState extends State<BiensPage> {
           children: affichageListe.map<Widget>((data) {
             return Card(
                 child: ListTile(
-                    leading: Image.network(data["selectedLienPhoto"] ?? ""),
-                    title: Text(data['selectedIdBien'] ?? "")));
+              // leading: Image.network(data["selectedLienPhoto"] ?? ""),
+              title: Text(data['selectedNomBien'] ?? ""),
+              subtitle: Text(data['selectedAdresseBien'] ?? ""),
+              trailing: TextButton(
+                child: const Text("Sélectionner"),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: ((context) => ConsulterPage(
+                              title: data['selectedIdBien'] ?? ""))));
+                },
+              ),
+            ));
           }).toList(),
         ),
       ),
